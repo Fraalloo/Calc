@@ -17,8 +17,11 @@ public class GMath{
     }
 
     public static boolean isNumber(String token){
-        if(token == null || token.isEmpty()) return false;
-        return token.matches("-?\\d+(\\.\\d+)?");
+        return token == null || token.isEmpty() ?  false : token.matches("-?\\d+(\\.\\d+)?");
+    }
+
+    public static boolean isConstant(String token){
+        return token == null || token.isEmpty() ? false : token.matches("e|π");
     }
 
     public static boolean isValidBase(int base){
@@ -27,30 +30,12 @@ public class GMath{
 
     public static boolean isValidNumber(String num, int base) throws MathNumberBaseException {
         if(!isValidBase(base)) throw new MathNumberBaseException();
-
-        num = num.toUpperCase();
-        int len = num.length();
-
-        if(base >= 2 && base <= 10){
-            for(int i = 0; i < len; i++){
-                char c = num.charAt(i);
-                if(c < '0' || c >= '0' + base) return false;
-            }
-        }else if(base >= 11 && base <= 36){
-            for(int i = 0; i < len; i++){
-                char c = num.charAt(i);
-                if (!(
-                    (c >= '0' && c <= '9') ||
-                    (c >= 'A' && c <= 'A' + (base - 11))
-                )) return false;
-            }
-        }
-
-        return true;
+        String regex = base >= 2 && base <= 10 ? "^[0-" + (char)('0' + base - 1) + "]+$" : "^[0-9A-" + (char)('A' + base - 11) + "]+$";
+        return num.toUpperCase().matches(regex);
     }
 
     private static int toDecimal(String num, int base) throws MathException {
-        if(!isValidBase(base)) throw new MathNumberBaseException();
+        if(!isValidBase(base)) throw new MathBaseException();
 
         int decimalValue = 0;
         int len = num.length();
@@ -69,14 +54,14 @@ public class GMath{
     }
 
     private static String fromDecimal(int decimalValue, int base) throws MathException {
-        if(!isValidBase(base)) throw new MathNumberBaseException();
+        if(!isValidBase(base)) throw new MathBaseException();
         if((!isValidNumber(Integer.toString(decimalValue), 10))) throw new MathNumberBaseException();
         if(decimalValue == 0) return "";
         
         int remainder = decimalValue % base;
-        char digit = (remainder < 10) ? (char)('0' + remainder) : (char)('A' + remainder - 10);
+        char digit = remainder < 10 ? (char)('0' + remainder) : (char)('A' + remainder - 10);
 
-        return  fromDecimal(decimalValue / base, base) + digit;
+        return fromDecimal(decimalValue / base, base) + digit;
     }
 
     public static String convert(String num, int inBase, int outBase) throws MathException {

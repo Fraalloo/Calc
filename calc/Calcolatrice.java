@@ -111,22 +111,19 @@ public class Calcolatrice extends GFrame implements ActionListener {
                 expr.addLast("×", "100");
                 break;
             case "sin":
-                expr.addLast("sin", "(");
-                break;
             case "cos":
-                expr.addLast("cos","(");
-                break;
             case "tan":
-                expr.addLast("tan","(");    
-                break;
             case "ln":
-                expr.addLast("ln","(");
-                break;
             case "log":
-                expr.addLast("log","(");
-                break;
             case "√":
-                expr.addLast("√","(");
+                if(
+                    expr.size() == 1 &&
+                    (
+                        GMath.isNumber(expr.getFirst()) ||
+                        GMath.isConstant(expr.getFirst())
+                    )
+                ) expr.addFirst(cmd,"(");
+                else expr.addLast(cmd, "(");
                 break;
             case "x²":
                 expr.addLast("^","2");
@@ -147,7 +144,11 @@ public class Calcolatrice extends GFrame implements ActionListener {
                 if(expr.isEmpty()) break;
                 try{
                     double ast = Parser.parse(expr).evaluate();
-                    String ret = ast == (int)ast ? String.valueOf((int)ast) : String.valueOf(ast);
+                    String ret = ast == Double.POSITIVE_INFINITY ?
+                        "∞" :
+                        ast == (int)ast ?
+                            String.valueOf((int)ast) :
+                            String.valueOf(ast);
                     disp.changeExpr(ret);
                     expr.clear();
                     expr.addLast(ret);
@@ -186,15 +187,18 @@ public class Calcolatrice extends GFrame implements ActionListener {
                 else if(
                     (
                         GMath.isNumber(cmd) ||
-                        cmd.toCharArray()[0] == '.'
+                        cmd.endsWith(".")
                     ) && 
                     !expr.isEmpty() &&
                     (
                         GMath.isNumber(last) ||
-                        last.toCharArray()[0] == '.'
+                        last.endsWith(".")
+                    ) || 
+                    (
+                        last.equals("-") && 
+                        (prelast == null || GMath.isNumber(prelast))
                     )
                 ) expr.setLast(last + cmd);
-                else if(last.equals("-") && (prelast == null || !GMath.isNumber(prelast))) expr.setLast(last + cmd);
                 else expr.addLast(cmd);
         }
 
